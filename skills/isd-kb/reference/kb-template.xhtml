@@ -1,0 +1,31 @@
+<h1>✍ KB Revise:</h1>
+<p>ID: KB{YYYYMMDD}-{NNN}</p>
+<table class="relative-table wrapped" style="width: 60%;"><tbody>
+<tr><td><p><strong>Ngày sửa đổi</strong></p></td><td><p><strong>Nội dung sửa đổi</strong></p></td><td><p><strong>Người thực hiện</strong></p></td></tr>
+<tr><td><p>{dd/mm/yyyy}</p></td><td><p>Soạn thảo lần 1</p></td><td><p>{user}</p></td></tr>
+<tr><td><p>&nbsp;</p></td><td><p>Kiểm duyệt / Xuất bản</p></td><td><p>&nbsp;</p></td></tr>
+</tbody></table>
+<h1>📝 KB Title</h1>
+<p>[KB{YYYYMMDD}-{NNN}] {tiêu đề}</p>
+<h2>🖥 Environment / Scope</h2>
+<table class="relative-table wrapped" style="width: 60%;"><tbody>
+<tr><td><p>Môi trường ảnh hưởng</p></td><td><p>{portal/module}</p></td></tr>
+<tr><td><p>Đối tượng áp dụng</p></td><td><p>{L1 / L2 / End-user}</p></td></tr>
+<tr><td><p>Loại sự cố/vấn đề</p></td><td><p>{mô tả ngắn}</p></td></tr>
+<tr><td><p>Ticket tham chiếu</p></td><td><p><a href="$ISD_URL/browse/{TICKET}">{TICKET}</a> — {summary}</p></td></tr>
+<tr><td><p>Khách hàng / VPC</p></td><td><p>{org, vpc, region}</p></td></tr>
+</tbody></table>
+<hr/>
+<h2>🚨 Symptoms / Problem Description</h2>
+<ul><li>{triệu chứng khách gặp, theo đúng mô tả trong ticket}</li></ul>
+<p><ac:image ac:width="700"><ri:attachment ri:filename="{TICKET}-symptom.png"/></ac:image></p>
+<h2>🔍 Nguyên nhân</h2>
+<p>{nguyên nhân đã verify; chưa rõ thì ghi rõ là đang điều tra, không đoán}</p>
+<h2>🛠 Resolution Steps</h2>
+<ol><li>{bước L1 làm lại được}</li></ol>
+<h2>✅ Kết quả</h2>
+<p>{khách xác nhận gì, lúc nào, kênh nào}</p>
+<h2>📌 Lưu ý khi hỗ trợ</h2>
+<ul><li>{điều không nên làm / điều kiện áp dụng}</li></ul>
+<h2>🏷 Tags</h2>
+<p>KB{YYYYMMDD}-{NNN} | {tag} | {TICKET}</p>

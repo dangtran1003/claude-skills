@@ -1,0 +1,172 @@
+# Glossary Template
+
+Used by the `translate` command to enforce consistent terminology across translations. Optional but strongly recommended for technical docs.
+
+## File location
+
+`documentation/standards/glossary.<locale>.yaml`
+
+One file per target locale. Source locale doesn't need a glossary (it's the reference).
+
+## Format
+
+```yaml
+# Schema version — bump when format changes (managed by docsmith, not user)
+version: "2026-04-26"
+
+# Locale this glossary applies to
+locale: vi
+
+# Optional: parent glossary to inherit from (1.5+ feature, ignored in 1.4.0)
+inherits: []
+
+# Term entries
+terms:
+
+  # ─── Technical terms — KEEP VERBATIM ────────────────────────────────
+
+  "instance":
+    translation: "instance"
+    case_sensitive: false       # match "Instance", "instance", "INSTANCE"
+    keep_verbatim: true         # don't translate; keep English
+    note: "Cloud computing term, kept in English per industry convention"
+
+  "API":
+    translation: "API"
+    case_sensitive: true        # only match "API", not "api"
+    keep_verbatim: true
+
+  "endpoint":
+    translation: "endpoint"
+    case_sensitive: false
+    keep_verbatim: true
+
+  # ─── Common terms — TRANSLATE ───────────────────────────────────────
+
+  "compute":
+    translation: "máy ảo"
+    case_sensitive: false
+
+  "storage":
+    translation: "lưu trữ"
+    case_sensitive: false
+
+  "network":
+    translation: "mạng"
+    case_sensitive: false
+
+  "region":
+    translation: "vùng"
+    case_sensitive: false
+
+  # ─── Multi-word terms (longest match wins) ──────────────────────────
+
+  "availability zone":
+    translation: "vùng khả dụng"
+    case_sensitive: false
+
+  "block storage":
+    translation: "lưu trữ khối"
+    case_sensitive: false
+
+  "object storage":
+    translation: "lưu trữ object"  # mixed: translate "storage" half, keep "object"
+    case_sensitive: false
+
+  # ─── Context-sensitive translations ─────────────────────────────────
+
+  "create":
+    translation: "tạo"            # default
+    case_sensitive: false
+    contexts:
+      imperative: "Tạo"           # "Create an instance" → "Tạo một instance"
+      noun: "việc tạo"            # "the creation of..." (rare)
+      ui_button: "Tạo"            # when followed by clear button reference
+
+  "delete":
+    translation: "xóa"
+    case_sensitive: false
+    contexts:
+      imperative: "Xóa"
+      ui_button: "Xóa"
+
+  # ─── UI labels — match actual product UI in target language ─────────
+  # When doc says "Click the **Create Instance** button", and product VI
+  # UI shows "Tạo Instance", these entries replace verbatim throughout.
+
+  "Create Instance":
+    translation: "Tạo Instance"
+    case_sensitive: true
+    is_ui_label: true
+
+  "Add Volume":
+    translation: "Thêm Volume"
+    case_sensitive: true
+    is_ui_label: true
+
+  "Settings":
+    translation: "Cài đặt"
+    case_sensitive: true
+    is_ui_label: true
+
+# Glossary maintenance notes (free-form)
+notes: |
+  Updated 2026-04-26 to align with product UI v3.4 Vietnamese localization.
+  Owners: docs team + product i18n team.
+  Review every 3 months or when product UI labels change.
+```
+
+## Field reference
+
+| Field            | Required | Default      | Notes                                                              |
+| ---------------- | -------- | ------------ | ------------------------------------------------------------------ |
+| `translation`    | Yes      | —            | Target-language equivalent                                         |
+| `case_sensitive` | No       | `false`      | If `true`, match only exact case                                   |
+| `keep_verbatim`  | No       | `false`      | If `true`, output the source term as-is (overrides `translation`)  |
+| `is_ui_label`    | No       | `false`      | Marks term as UI label; used by walkthrough to verify against product |
+| `contexts`       | No       | —            | Map of context name → context-specific translation                 |
+| `note`           | No       | —            | Human note for maintainers; not used by AI                         |
+
+## How matching works
+
+1. **Longest match wins**: `"availability zone"` matches before `"zone"` alone in the same span.
+2. **Case sensitivity**: per entry. Default is case-insensitive.
+3. **Word boundary**: matching respects word boundaries (`"create"` does NOT match inside `"created"`).
+4. **Context detection**: if `contexts:` defined, AI determines syntactic role and selects appropriate translation. Falls back to default `translation` if uncertain.
+
+## How to build a glossary iteratively
+
+You don't need a complete glossary on day 1. Start small:
+
+1. **First translation pass**: run `translate` without glossary. Review per-block. Note which terms you keep correcting.
+2. **Build glossary from corrections**: collect frequently-corrected terms into `glossary.<locale>.yaml`.
+3. **Re-translate**: run `translate` again with glossary. Most blocks should pass-through unchanged.
+4. **Repeat after major doc updates**: each new content area surfaces new terms.
+
+`verify` flags glossary inconsistencies — terms translated differently across docs — to help you grow the glossary.
+
+## Multi-locale glossaries
+
+Each target locale has its own file:
+
+```
+documentation/standards/
+├── glossary.vi.yaml
+├── glossary.jp.yaml
+└── glossary.fr.yaml
+```
+
+These files are independent in 1.4.0. Inheritance/sharing across locales (e.g., shared technical terms list) is a 1.5+ feature.
+
+## When NOT to use glossary
+
+- Single-locale projects (no `translate` command runs)
+- Marketing/blog content where terminology is intentionally varied
+- Drafts in early stages where vocabulary isn't settled
+
+## What glossary does NOT do
+
+- Style or tone enforcement (use `voice-chart.<locale>.md` for that — 1.5+ roadmap)
+- Grammar correction
+- Sentence-level translation memory (per-block, but not per-sentence)
+- Translation quality scoring (use `verify` post-translate)

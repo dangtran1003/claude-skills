@@ -1,0 +1,107 @@
+# presets/docusaurus.yaml
+# Defaults for Docusaurus targets. Activated by deploy.preset = docusaurus.
+# Used by `deploy` and `categorize` commands.
+
+deploy:
+  enabled: true
+
+# Detection — read these from target before applying defaults
+detection:
+  config_files:                  # Try in order
+    - docusaurus.config.ts
+    - docusaurus.config.js
+    - docusaurus.config.mjs
+  config_keys:                   # Fields to extract from config
+    - i18n.defaultLocale         # → locales.source override
+    - i18n.locales               # → locales.targets sanity check
+    - presets[0][1].docs.path    # → docs_path override
+    - staticDirectories          # → static_path override (first entry)
+  fallback_signals:              # If config parse fails, look for folders
+    - i18n/                      # → confirms i18n is configured
+    - static/                    # → confirms static dir
+    - docs/                      # → confirms docs dir
+
+# Path mapping (source → target)
+mappings:
+
+  # Default-locale drafts → docs/
+  - source: documentation/drafts/{locales.source}/**/*.md
+    target: "{docs_path}/**"
+    transforms:
+      - inject_frontmatter
+      - rewrite_image_refs       # /images/X → /img/{product.slug}/X
+      - rewrite_video_refs       # /videos/X → /videos/{product.slug}/X
+      - escape_mdx_specials      # {} < > in body text outside code blocks
+
+  # Non-default-locale drafts → i18n/<locale>/.../current/
+  - source: documentation/drafts/{locale}/**/*.md
+    target: "{i18n_path}/{locale}/docusaurus-plugin-content-docs/current/**"
+    transforms:
+      - inject_frontmatter
+      - rewrite_image_refs
+      - rewrite_video_refs
+      - escape_mdx_specials
+    only_when: locale != locales.source
+    # 1.4.0+: these drafts come from `translate` command, not authored directly.
+    # Empty target folders mean translation hasn't run yet — deploy warns.
+
+  # Images
+  - source: documentation/images/**/*.{png,jpg,jpeg,gif,svg,webp}
+    target: "{static_path}/{image_subpath}/**"
+    transforms: []               # Binary, no transform
+
+  # Videos
+  - source: documentation/videos/*.mp4
+    target: "{static_path}/{video_subpath}/*.mp4"
+    transforms: []
+
+  # Generated category files (if generate_categories enabled)
+  - source: "<generated>"
+    target: "{docs_path}/**/_category_.json"
+    transforms: []
+    when: generate_categories
+
+# Image / video reference rewriting rules
+ref_rewriting:
+  image:
+    from_pattern: "^/images/(.+)$"
+    to_pattern:   "/img/{product.slug}/$1"
+  video:
+    from_pattern: "^/videos/(.+)$"
+    to_pattern:   "/videos/{product.slug}/$1"
+
+# Frontmatter injection — defaults applied per file
+frontmatter_defaults:
+  id_strategy: from_path         # ID = relative path without extension
+  title_strategy: from_h1        # Title = first H1 in body
+  position_strategy: from_sitemap # Position from sitemap order; falls back to alphabetical
+
+# Categories
+categorize:
+  source: documentation/plan/sitemap.md
+  output_pattern: "{docs_path}/{folder}/_category_.json"
+  fields:
+    label: from_sitemap_title    # Use exact title from sitemap
+    position: from_sitemap_order
+    link_type: generated-index   # Use Docusaurus generated category page
+  normalize_titles: true         # Apply title-case rules consistently
+  warn_on_undocumented: true     # Flag folders not in sitemap
+
+# MDX safety
+mdx:
+  escape_in_body:                # Characters that break MDX in prose
+    - "{"
+    - "}"
+  exempt_in:                     # Don't escape inside these
+    - code_blocks
+    - inline_code
+    - frontmatter
+    - html_blocks
+
+# Hide undocumented folders — guidance only (Docusaurus has no built-in hide)
+hide_undocumented:
+  strategy: report               # report | exclude | sidebar
+                                 # report   — list in deploy summary, no auto action
+                                 # exclude  — write `exclude` array suggestion to deploy log
+                                 # sidebar  — generate sidebars.generated.js limited to documented folders
+                                 #            (only if generate_sidebars: true)

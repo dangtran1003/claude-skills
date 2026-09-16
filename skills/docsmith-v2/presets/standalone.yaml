@@ -1,0 +1,21 @@
+# presets/standalone.yaml
+# Default preset. Used when deploy.preset = standalone or omitted.
+# Workspace lives on its own. No deploy target. Output stays in
+# documentation/ folder. Use this when:
+#  - You're drafting before knowing the final host
+#  - You want to publish manually
+#  - You're using a documentation system not yet covered by a preset
+
+deploy:
+  enabled: false                 # `deploy` command is a no-op for this preset
+
+paths:
+  workspace: documentation/
+  drafts: documentation/drafts/
+  images: documentation/images/
+  videos: documentation/videos/
+
+image_refs:
+  style: workspace_absolute      # /images/<feature>/<asset>.png in markdown
+                                 # Renders correctly in workspace, ready for
+                                 # rewrite by future deploy

@@ -1,0 +1,32 @@
+# Cách làm việc (copy vào CLAUDE.md của repo hoặc ~/.claude/CLAUDE.md)
+
+Toàn bộ luồng điều tra → fix → MR → tài liệu nằm trong skill `/bss-flow`.
+Khi gặp bug/trace/ticket, đọc skill đó trước rồi đi theo các gate trong đó.
+
+Vài quy tắc luôn áp dụng, không đợi được nhắc:
+
+## Comment: tối đa 1 dòng
+Chỉ comment chỗ **thực sự khó** — đọc code không suy ra được. Nội dung là **WHY**, không mô tả lại
+thứ code đã tự nói. Cần 2 dòng nghĩa là chưa chắt: viết lại cho gọn hoặc bỏ. Docstring cũng 1 dòng.
+Bối cảnh/số liệu/lịch sử bug thuộc về commit message hoặc MR description, không phải trong code.
+
+## Verify trước khi kết luận
+Không tuyên bố root cause hay "bug" cho tới khi verify bằng data/trace thật. Chưa chắc thì nêu giả
+định và hỏi, đừng tự sửa code. Xác nhận đúng branch + đúng version controller (v1/v2) trước khi
+phân tích — `staging-compute` là DEV, `staging` mới là staging.
+
+## Trace full luồng trước khi sửa
+Đi đủ task → controller → manager → boundary, gồm cả method gọi ngầm bên trong. Cấu trúc hiện tại
+có thể là cố ý theo design; đừng đảo thứ tự hay bỏ bước chỉ vì đọc bề mặt thấy thừa.
+
+## Dual-platform
+Mọi thay đổi đụng infra API / SDK / boundary / sync / task phải check cả nhánh OSP lẫn VMW trước
+khi chốt. Nhiều method no-op hoặc rẽ nhánh theo platform.
+
+## Đổi data thì grep hết consumer
+Đổi giá trị (type/enum/status) hoặc đổi timing/nullability đều phải grep mọi reader BE + FE trước
+khi merge, kể cả reader chỉ vỡ ở trạng thái transient.
+
+## Scope
+Bám đúng scope được yêu cầu. Không sửa bug không liên quan. Chạy `git branch --show-current` trước
+mọi commit/revert/cherry-pick.

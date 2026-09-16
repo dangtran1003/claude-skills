@@ -1,0 +1,21 @@
+{
+  "name": "docsmith",
+  "version": "1.6.0",
+  "description": "Build documentation from filled markdown intake forms. Fetches from Notion/GitHub/GDrive/URL/files, drafts content, captures screenshots, translates to multiple locales, deploys to Docusaurus.",
+  "author": {
+    "name": "dangtran1003"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/dangtran1003/docsmith-v2",
+  "keywords": [
+    "documentation",
+    "technical-writing",
+    "ux-writing",
+    "docusaurus",
+    "i18n-localization",
+    "translation",
+    "intake-forms",
+    "ba-friendly",
+    "knowledge-fetch"
+  ]
+}

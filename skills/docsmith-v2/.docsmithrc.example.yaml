@@ -1,0 +1,126 @@
+# .docsmithrc.example.yaml
+# Copy this file to `.docsmithrc.yaml` at the root of your documentation
+# workspace and customize. Every docsmith command reads this file before
+# doing anything — it scopes paths and prevents writes outside the workspace.
+
+product:
+  slug: mycloud                  # Short identifier. Used as image namespace
+                                 # (e.g. /img/mycloud/...) — must be globally
+                                 # unique across all your products. Lowercase,
+                                 # kebab-case, no spaces.
+  name: "MyCloud"                # Human-readable name, used in titles.
+
+# Languages
+locales:
+  source: en                     # Draft language. AI generates docs here.
+  targets: []                    # Translation targets. v1.4.0+ supports
+                                 # automatic translation via the `translate`
+                                 # command (per-block review by default).
+                                 # Examples: [vi, jp], [vi, jp, fr]
+                                 # Each target locale should have an optional
+                                 # glossary file at:
+                                 #   documentation/standards/glossary.<locale>.yaml
+                                 # See templates/GLOSSARY_TEMPLATE.yaml.
+
+# Workspace paths (relative to project root where this file lives)
+paths:
+  workspace: documentation/      # All docsmith working files live here
+  deployments: deployments/      # Audit trail of past deploys
+
+# Deploy target (where docs get copied for publishing)
+deploy:
+  default_target: ""             # Path to host project. Empty = standalone mode.
+                                 # Examples:
+                                 #   ../mycloud-docusaurus    (sibling project)
+                                 #   .                        (in-place mode)
+                                 #   /home/user/site          (absolute)
+  preset: standalone             # standalone | docusaurus
+                                 # See presets/<preset>.yaml for defaults.
+  on_collision: warn             # warn | skip | overwrite | prompt
+                                 # What to do when a target file exists with
+                                 # different content. `prompt` asks per file.
+  sync_deletes: false            # 1.3.0+: propagate workspace deletions to
+                                 # target. Default false (safe). Per-run flag:
+                                 # `deploy --sync-deletes`.
+  audit_retention_days: 0        # 1.3.0+: keep deploy audit trails for N days.
+                                 # 0 = forever (recommended).
+
+# Re-run and update behavior (1.3.0+)
+behavior:
+  on_existing: prompt            # prompt | update | overwrite | side-by-side
+                                 # What to do when a docsmith command would
+                                 # write a file that already exists.
+                                 #   prompt        — always ask (default, safe)
+                                 #   update        — read existing as KB, propose deltas
+                                 #   overwrite     — archive existing, regenerate fresh
+                                 #   side-by-side  — keep both, new file gets suffix
+  drift_default_action: prompt   # prompt | auto-apply-high-confidence
+                                 # In `walkthrough` drift detection (Phase A),
+                                 # what to do after the report is generated:
+                                 #   prompt — wait for user to edit decisions.yaml
+                                 #   auto-apply-high-confidence — skip gate;
+                                 #     auto-apply HIGH confidence fixes only
+  side_by_side_suffix_style: numbered   # numbered (-v2, -v3) | date (-2026-04-26)
+
+# Translation behavior (1.4.0+, only applies if locales.targets non-empty)
+translate:
+  enabled: true                  # Auto-disabled if locales.targets is empty
+  glossary_required: false       # If true, fail translate when glossary file
+                                 # missing for a target locale.
+  default_review_mode: per-block # per-block | auto-approve
+                                 # per-block   — show source/translation side-by-side
+                                 #               for each block; user approves/edits
+                                 # auto-approve — skip gate; apply AI translation as-is
+                                 #               (less safe, faster, for CI use)
+  preserve_frontmatter_fields:   # Fields NEVER translated even if present
+    - id
+    - slug
+    - sidebar_position
+    - tags
+  translate_frontmatter_fields:  # Fields translated explicitly
+    - title
+    - description
+    - keywords
+  warn_on_deploy_if_incomplete: true
+                                 # If a target locale has fewer translated files
+                                 # than source, deploy emits a warning listing
+                                 # untranslated files. User can proceed or abort.
+
+# Docusaurus-specific options (only applied when preset = docusaurus)
+docusaurus:
+  # All paths below are RELATIVE TO TARGET PROJECT ROOT.
+  # Most can be auto-detected from docusaurus.config.{js,ts}; values here are
+  # overrides if detection fails or if the target uses non-standard paths.
+  docs_path: docs
+  i18n_path: i18n
+  static_path: static
+  image_subpath: img/{product.slug}    # Becomes /img/mycloud/... in refs
+  video_subpath: videos/{product.slug}
+
+  # Frontmatter & sidebars
+  inject_frontmatter: true       # Add Docusaurus frontmatter on deploy.
+                                 # Drafts in workspace stay frontmatter-free.
+  generate_categories: true      # Generate _category_.json from sitemap.
+  generate_sidebars: false       # Generate sidebars.generated.js from sitemap.
+                                 # Default false to avoid overriding user's
+                                 # custom sidebars.js. Enable explicitly.
+
+  # Read host project context before deploy
+  read_target_claude_md: true    # If <target>/CLAUDE.md exists, read it for
+                                 # any docsmith hints / project conventions.
+
+# Image collision avoidance
+images:
+  collision_strategy: namespace  # namespace | namespace-hash | namespace-versioned
+                                 # namespace        — slug prefix only (clean)
+                                 # namespace-hash   — also content-hash check,
+                                 #                    warn on different content
+                                 # namespace-versioned — append timestamp
+                                 #                    (creates clutter, avoid)
+
+# Validation behavior
+validation:
+  fail_on_placeholder: true      # Block deploy if any placehold.co URL remains
+  fail_on_unresolved_video: true # Block deploy if <!-- VIDEO --> markers exist
+                                 # without recordings
+  fail_on_missing_caption: false # Warn (not block) on captions failing rules
